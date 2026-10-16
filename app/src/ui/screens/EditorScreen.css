@@ -1,0 +1,95 @@
+.editor-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.editor-tabs button {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.editor-tabs button.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.editor-search {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.editor-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.editor-row-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.editor-row-meta {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.editor-field {
+  margin-bottom: 12px;
+}
+
+.editor-field label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.editor-field input,
+.editor-field select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.editor-back {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  padding: 0 0 12px;
+}
+
+.editor-saved {
+  color: var(--accent);
+  font-size: 12px;
+  margin-left: 8px;
+}

@@ -16,7 +16,7 @@ Legend: ⬜ not started · 🟨 in progress · ✅ done
 - Verified in-browser (desktop + mobile viewport): dark theme, bottom nav, IndexedDB open, production build/lint/tests all clean. **Not yet verified on your actual iPhone** — see [README.md](README.md) for the local-network testing steps; let me know if the home-screen install and offline reload don't work as expected.
 
 ## Milestone 1 — One league, playable, balance-tested
-⬜ Status
+✅ Status (2026-10-16)
 
 Scope: Premier League only (Arsenal as your test club), but the import/editor/engine code here is written generically for all 10 playable leagues — M2 is mostly "turn the rest on," not a rewrite.
 
@@ -29,6 +29,8 @@ Scope: Premier League only (Arsenal as your test club), but the import/editor/en
 - In-match management: tactical changes, shouts, subs, half-time talks (talks can be stubbed to a simple personality check here; full depth lands in M3).
 - Squad screen, basic season stats (table, top scorers/assists), fixture list, calendar/sim-forward.
 - **Acceptance**: you manage Arsenal through a full Premier League season on your phone, with results that feel realistic.
+- Verified: balance harness passes all 6 checks (goals/game, home/draw/away split, champion/bottom points, scoreline distribution) across 25 simulated seasons; full `npm test` suite (engine unit tests + a real-Arsenal-squad lineup test) green; build/lint clean. Walked the whole loop live in-browser — new game → Arsenal squad/tactics render with real EA data → play a match in each of the 3 viewing modes → half-time team talk verified to leave the first half bit-identical and change the second → matchday auto-advances the other 19 clubs → table/top-scorers update → editor edit (economy multiplier, a player rating) persists and is reflected elsewhere live. **Not yet verified on your actual iPhone** — same caveat as Milestone 0.
+- Scope simplifications made along the way, to revisit later: single implicit save slot (`"default"`) rather than a save-slot picker UI — the multi-save architecture (`openSaveDatabase(saveId)`, one Dexie database per slot) is already in place, just not exposed in the UI yet. In-match management is the stub the roadmap allowed: tactics are pre-match only (no mid-match tactical changes/subs), and the half-time "team talk" is a flat tone-based multiplier, not yet personality-driven (both land properly in M3). Editor covers the highest-value fields (ratings, club ID, finances, economy multiplier) rather than every attribute; full-depth attribute editing can grow as it's actually needed. `players_world.json`/`europe.json` (transfer pool + Europe) aren't imported yet — deferred to M2 by design (§2 of DESIGN.md).
 
 ## Milestone 2 — All 10 leagues, full background world, Europe, cups, rollover
 ⬜ Status

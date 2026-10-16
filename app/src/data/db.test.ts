@@ -7,7 +7,7 @@ describe('GameDatabase', () => {
     const db = openSaveDatabase('vitest');
     await db.open();
     expect(db.tables.map((t) => t.name).sort()).toEqual(
-      ['clubs', 'cups', 'kv', 'leagues', 'people', 'players', 'saves'].sort(),
+      ['clubs', 'cups', 'fixtures', 'kv', 'leagues', 'people', 'players', 'saves', 'tactics'].sort(),
     );
     db.close();
   });

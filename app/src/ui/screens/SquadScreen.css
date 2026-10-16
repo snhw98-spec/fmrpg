@@ -1,0 +1,48 @@
+.squad-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.squad-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.squad-table th,
+.squad-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.squad-table th {
+  color: var(--text-dim);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+
+.squad-table td:first-child,
+.squad-table th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.squad-table .num-cell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.squad-table .generated-tag {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-left: 4px;
+}

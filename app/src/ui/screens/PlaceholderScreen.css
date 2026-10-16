@@ -33,6 +33,32 @@
   margin: 0;
 }
 
+.primary-button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #0b0f14;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+}
+
+.secondary-button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+}
+
 .milestone-badge {
   display: inline-block;
   font-size: 11px;

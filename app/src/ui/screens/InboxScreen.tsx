@@ -1,39 +1,62 @@
-import { useEffect, useState } from 'react';
-import { openSaveDatabase } from '../../data/db';
+import { currentMatchday } from '../../state/actions';
+import { useReadyGame } from '../../state/GameContext';
+import { useClubsById, useLeagueFixtures, useManagerClub } from '../../state/hooks';
 import './PlaceholderScreen.css';
 
-type DbStatus = 'checking' | 'ready' | 'error';
+export function InboxScreen({ onPlayFixture }: { onPlayFixture: (fixtureId: string) => void }) {
+  const { save } = useReadyGame();
+  const managerClub = useManagerClub();
+  const fixtures = useLeagueFixtures();
+  const clubsById = useClubsById();
 
-export function InboxScreen() {
-  const [dbStatus, setDbStatus] = useState<DbStatus>('checking');
+  const matchday = fixtures ? currentMatchday(fixtures) : null;
+  const myFixture =
+    matchday !== null && fixtures
+      ? fixtures.find(
+          (f) =>
+            f.matchday === matchday &&
+            (f.homeClubId === save.managerClubId || f.awayClubId === save.managerClubId),
+        )
+      : undefined;
 
-  useEffect(() => {
-    const db = openSaveDatabase('scaffold-check');
-    db.open()
-      .then(() => setDbStatus('ready'))
-      .catch(() => setDbStatus('error'));
-    return () => db.close();
-  }, []);
+  const seasonOver = fixtures && fixtures.every((f) => f.result);
 
   return (
     <div className="screen">
       <h1 className="screen-header">Inbox</h1>
+
       <div className="card">
-        <span className="milestone-badge">Milestone 0</span>
-        <h2 className="card-title">Scaffolding complete</h2>
-        <p className="card-body">
-          The app shell, offline storage and PWA install are wired up. No world data is
-          imported yet — that lands in Milestone 1, along with the real inbox: match
-          results, press requests and promise deadlines will show up here.
-        </p>
-      </div>
-      <div className="card">
-        <h2 className="card-title">Offline storage</h2>
-        <p className="card-body">
-          {dbStatus === 'checking' && 'Checking IndexedDB…'}
-          {dbStatus === 'ready' && 'IndexedDB is working — saves will persist offline.'}
-          {dbStatus === 'error' && 'Could not open IndexedDB in this browser.'}
-        </p>
+        <span className="milestone-badge">{managerClub?.name ?? '…'}</span>
+        <h2 className="card-title">{new Date(save.currentDate).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
+        {seasonOver && <p className="card-body">The season is complete. Check Stats for the final table.</p>}
+        {!seasonOver && !myFixture && <p className="card-body">No fixture scheduled yet — advancing…</p>}
+        {!seasonOver && myFixture && clubsById && (
+          <>
+            <p className="card-body">
+              Matchday {myFixture.matchday}:{' '}
+              {myFixture.homeClubId === save.managerClubId ? (
+                <>
+                  <strong>{clubsById.get(myFixture.homeClubId)?.shortName}</strong> vs{' '}
+                  {clubsById.get(myFixture.awayClubId)?.shortName}
+                </>
+              ) : (
+                <>
+                  {clubsById.get(myFixture.homeClubId)?.shortName} vs{' '}
+                  <strong>{clubsById.get(myFixture.awayClubId)?.shortName}</strong>
+                </>
+              )}
+              {' '}&middot; {myFixture.date}
+            </p>
+            <button
+              type="button"
+              className="primary-button"
+              style={{ marginTop: 10 }}
+              onClick={() => onPlayFixture(myFixture.id)}
+            >
+              Play match
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
