@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fmrpg-preview",
+      "runtimeExecutable": "/tmp/preview-test.sh",
+      "runtimeArgs": [],
+      "port": 4173
+    }
+  ]
+}

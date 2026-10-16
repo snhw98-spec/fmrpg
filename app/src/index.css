@@ -1,0 +1,43 @@
+:root {
+  --bg: #0b0f14;
+  --surface: #121821;
+  --surface-raised: #1a222e;
+  --border: #242e3c;
+  --text: #e6ebf1;
+  --text-dim: #8b97a7;
+  --accent: #22c55e;
+  --danger: #ef4444;
+  --nav-height: 56px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--accent);
+}
