@@ -5,7 +5,7 @@ Each milestone ends with a build you can install on your phone and actually play
 Legend: ⬜ not started · 🟨 in progress · ✅ done
 
 ## Milestone 0 — Scaffolding
-⬜ Status
+✅ Status (2026-10-16)
 
 - Vite + React + TS (strict) app under `app/`; ESLint/Prettier; Vitest wired up.
 - Dexie schema for `leagues`, `clubs`, `players`, `people`, `cups`, `europe`, `saves`.
@@ -13,6 +13,7 @@ Legend: ⬜ not started · 🟨 in progress · ✅ done
 - PWA shell: manifest, service worker (offline app-shell caching), installable on iOS, dark mode by default.
 - Git repo initialized at the project root; this and all later milestones end in a commit.
 - **Acceptance**: installs to an iPhone home screen, opens offline, shows an empty-state screen.
+- Verified in-browser (desktop + mobile viewport): dark theme, bottom nav, IndexedDB open, production build/lint/tests all clean. **Not yet verified on your actual iPhone** — see [README.md](README.md) for the local-network testing steps; let me know if the home-screen install and offline reload don't work as expected.
 
 ## Milestone 1 — One league, playable, balance-tested
 ⬜ Status
