@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import type { ClubRow, PlayerRow } from '../domain/types';
-import { PLAYABLE_LEAGUE_ID } from './actions';
+import type { Fixture } from '../domain/competition';
+import type { ClubRow, LeagueRow, PlayerRow } from '../domain/types';
 import { useReadyGame } from './GameContext';
 
 export function useManagerClub(): ClubRow | undefined {
@@ -13,9 +13,21 @@ export function useClub(clubId: string | undefined): ClubRow | undefined {
   return useLiveQuery(() => (clubId ? db.clubs.get(clubId) : undefined), [clubId]);
 }
 
-export function useLeagueFixtures() {
+/** The manager's club's current league — re-derived live, since promotion/relegation can
+ * move the club between leagues at rollover. */
+export function useManagerLeague(): LeagueRow | undefined {
   const { db } = useReadyGame();
-  return useLiveQuery(() => db.fixtures.where('leagueId').equals(PLAYABLE_LEAGUE_ID).toArray(), []);
+  const managerClub = useManagerClub();
+  return useLiveQuery(() => (managerClub ? db.leagues.get(managerClub.leagueId) : undefined), [managerClub?.leagueId]);
+}
+
+export function useLeagueFixtures(leagueId: string | undefined, season: string): Fixture[] | undefined {
+  const { db } = useReadyGame();
+  return useLiveQuery(
+    () =>
+      leagueId ? db.fixtures.where('[season+competitionId]').equals([season, leagueId]).toArray() : [],
+    [leagueId, season],
+  );
 }
 
 export function useSquad(clubId: string | undefined): PlayerRow[] | undefined {
@@ -23,8 +35,9 @@ export function useSquad(clubId: string | undefined): PlayerRow[] | undefined {
   return useLiveQuery(() => (clubId ? db.players.where('clubId').equals(clubId).toArray() : []), [clubId]);
 }
 
-export function useClubsById(): Map<string, ClubRow> | undefined {
+export function useClubsById(clubIds: string[] | undefined): Map<string, ClubRow> | undefined {
   const { db } = useReadyGame();
-  const clubs = useLiveQuery(() => db.clubs.where('leagueId').equals(PLAYABLE_LEAGUE_ID).toArray(), []);
-  return clubs ? new Map(clubs.map((c) => [c.id, c])) : undefined;
+  const key = clubIds?.join(',') ?? '';
+  const clubs = useLiveQuery(() => (clubIds ? db.clubs.bulkGet(clubIds) : []), [key]);
+  return clubs ? new Map(clubs.filter((c): c is ClubRow => !!c).map((c) => [c.id, c])) : undefined;
 }

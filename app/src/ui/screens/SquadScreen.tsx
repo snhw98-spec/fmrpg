@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ageAt } from '../../engine/age';
 import { useReadyGame } from '../../state/GameContext';
 import { useSquad } from '../../state/hooks';
 import './PlaceholderScreen.css';
@@ -6,18 +7,11 @@ import './SquadScreen.css';
 
 type SortKey = 'overall' | 'age' | 'name' | 'position';
 
-function age(dateOfBirth: string): number {
-  const dob = new Date(dateOfBirth);
-  const now = new Date('2026-07-01');
-  let a = now.getFullYear() - dob.getFullYear();
-  if (now.getMonth() < dob.getMonth() || (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate())) a--;
-  return a;
-}
-
 export function SquadScreen() {
   const { save } = useReadyGame();
   const squad = useSquad(save.managerClubId ?? undefined);
   const [sortKey, setSortKey] = useState<SortKey>('overall');
+  const age = (dateOfBirth: string) => ageAt(dateOfBirth, save.currentDate);
 
   const sorted = useMemo(() => {
     if (!squad) return [];
@@ -35,7 +29,8 @@ export function SquadScreen() {
       }
     });
     return copy;
-  }, [squad, sortKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [squad, sortKey, save.currentDate]);
 
   return (
     <div className="screen">

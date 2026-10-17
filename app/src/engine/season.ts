@@ -1,4 +1,4 @@
-import type { Fixture } from '../domain/match';
+import type { CompetitionKind, Fixture } from '../domain/competition';
 
 /**
  * Standard circle-method round robin. clubIds.length must be even. Returns one round
@@ -27,8 +27,34 @@ function roundRobinPairs(n: number): [number, number][][] {
   return rounds;
 }
 
+/** 2026/27 FIFA international windows, approximate. League/cup matchdays are pushed past
+ * these (DESIGN.md: "International breaks pause league/cup scheduling without pausing the
+ * calendar"). */
+export const INTERNATIONAL_BREAKS: [string, string][] = [
+  ['2026-09-01', '2026-09-09'],
+  ['2026-10-05', '2026-10-13'],
+  ['2026-11-09', '2026-11-17'],
+  ['2027-03-16', '2027-03-24'],
+];
+
+function inBreak(dateStr: string, breaks: [string, string][]): boolean {
+  return breaks.some(([start, end]) => dateStr >= start && dateStr <= end);
+}
+
+/** Nudges a date forward a week at a time until it's clear of every international break. */
+export function nextAvailableDate(date: Date, breaks: [string, string][] = INTERNATIONAL_BREAKS): Date {
+  const d = new Date(date);
+  let guard = 0;
+  while (inBreak(d.toISOString().slice(0, 10), breaks) && guard < 10) {
+    d.setDate(d.getDate() + 7);
+    guard++;
+  }
+  return d;
+}
+
 export function generateDoubleRoundRobinFixtures(
-  leagueId: string,
+  competitionId: string,
+  season: string,
   clubIds: string[],
   startDate: Date,
   daysBetweenMatchdays = 7,
@@ -44,18 +70,21 @@ export function generateDoubleRoundRobinFixtures(
   const fixtures: Fixture[] = [];
   let matchday = 1;
   for (const round of allRounds) {
-    const date = new Date(startDate);
-    date.setDate(date.getDate() + (matchday - 1) * daysBetweenMatchdays);
-    const dateStr = date.toISOString().slice(0, 10);
+    const raw = new Date(startDate);
+    raw.setDate(raw.getDate() + (matchday - 1) * daysBetweenMatchdays);
+    const dateStr = nextAvailableDate(raw).toISOString().slice(0, 10);
     for (const [homeIdx, awayIdx] of round) {
       fixtures.push({
-        id: `${leagueId}-md${matchday}-${clubIds[homeIdx]}-${clubIds[awayIdx]}`,
-        leagueId,
-        matchday,
+        id: `${competitionId}-${season}-md${matchday}-${clubIds[homeIdx]}-${clubIds[awayIdx]}`,
+        season,
+        kind: 'league',
+        competitionId,
+        round: matchday,
         homeClubId: clubIds[homeIdx] as string,
         awayClubId: clubIds[awayIdx] as string,
         date: dateStr,
         result: null,
+        played: 0,
       });
     }
     matchday++;
@@ -75,7 +104,7 @@ export interface TableRow {
   points: number;
 }
 
-export function computeTable(clubIds: string[], fixtures: Fixture[]): TableRow[] {
+export function computeTable(clubIds: string[], fixtures: readonly Pick<Fixture, 'homeClubId' | 'awayClubId' | 'result'>[]): TableRow[] {
   const rows = new Map<string, TableRow>(
     clubIds.map((id) => [
       id,
@@ -84,7 +113,7 @@ export function computeTable(clubIds: string[], fixtures: Fixture[]): TableRow[]
   );
 
   for (const fixture of fixtures) {
-    if (!fixture.result) continue;
+    if (!fixture.result || !fixture.awayClubId) continue;
     const home = rows.get(fixture.homeClubId);
     const away = rows.get(fixture.awayClubId);
     if (!home || !away) continue;
@@ -122,3 +151,13 @@ export function computeTable(clubIds: string[], fixtures: Fixture[]): TableRow[]
     (a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor,
   );
 }
+
+/** The lowest round (of the given kind) with at least one unplayed fixture in this
+ * competition/season, or null if that stage is complete. */
+export function currentRound(fixtures: readonly Pick<Fixture, 'round' | 'result'>[]): number | null {
+  const unplayed = fixtures.filter((f) => !f.result);
+  if (unplayed.length === 0) return null;
+  return Math.min(...unplayed.map((f) => f.round));
+}
+
+export type { CompetitionKind, Fixture };

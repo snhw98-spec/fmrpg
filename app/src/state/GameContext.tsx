@@ -2,7 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { openSaveDatabase, type GameDatabase } from '../data/db';
 import { importWorldIfNeeded } from '../data/import';
 import type { SaveSlot } from '../domain/types';
-import { SAVE_ID, startNewGame } from './actions';
+import { SAVE_ID } from './actions';
+import { startNewGame } from './world';
 
 export type GamePhase =
   | { kind: 'loading' }

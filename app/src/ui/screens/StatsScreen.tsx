@@ -1,21 +1,21 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { computeTable } from '../../engine/season';
-import { PLAYABLE_LEAGUE_ID } from '../../state/actions';
 import { useReadyGame } from '../../state/GameContext';
-import { useClubsById, useLeagueFixtures } from '../../state/hooks';
+import { useClubsById, useLeagueFixtures, useManagerLeague } from '../../state/hooks';
 import './PlaceholderScreen.css';
 import './SquadScreen.css';
 
 export function StatsScreen() {
   const { db, save } = useReadyGame();
-  const fixtures = useLeagueFixtures();
-  const clubsById = useClubsById();
+  const league = useManagerLeague();
+  const fixtures = useLeagueFixtures(league?.id, save.currentSeason);
+  const clubsById = useClubsById(league?.clubIds);
 
   const table = useMemo(() => {
-    if (!fixtures || !clubsById) return [];
-    return computeTable([...clubsById.keys()], fixtures);
-  }, [fixtures, clubsById]);
+    if (!fixtures || !league) return [];
+    return computeTable(league.clubIds, fixtures);
+  }, [fixtures, league]);
 
   const topScorers = useMemo(() => {
     if (!fixtures) return [];
@@ -39,7 +39,7 @@ export function StatsScreen() {
   return (
     <div className="screen">
       <h1 className="screen-header">Stats</h1>
-      <h2 className="card-title">Premier League table</h2>
+      <h2 className="card-title">{league?.name ?? 'League'} table</h2>
       <div className="squad-table-wrap">
         <table className="squad-table">
           <thead>
@@ -93,5 +93,3 @@ export function StatsScreen() {
     </div>
   );
 }
-
-export const STATS_LEAGUE_ID = PLAYABLE_LEAGUE_ID;

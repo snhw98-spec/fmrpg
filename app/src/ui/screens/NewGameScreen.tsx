@@ -1,33 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { RawClub, RawLeague } from '../../domain/raw';
 import { useGameContext } from '../../state/GameContext';
 import './NewGameScreen.css';
 
+const PREFERRED_DEFAULT_LEAGUE = 'ENG1';
 const PREFERRED_DEFAULT_CLUB = 'arsenal';
+const PLAYABLE_LEAGUE_IDS = ['ENG1', 'ENG2', 'ENG3', 'ENG4', 'ITA1', 'ITA2', 'ESP1', 'ESP2', 'GER1', 'GER2'];
 
 export function NewGameScreen() {
   const { phase, beginCareer } = useGameContext();
-  const [clubs, setClubs] = useState<RawClub[] | null>(null);
+  const [leagues, setLeagues] = useState<RawLeague[] | null>(null);
+  const [allClubs, setAllClubs] = useState<RawClub[] | null>(null);
+  const [leagueId, setLeagueId] = useState<string>(PREFERRED_DEFAULT_LEAGUE);
   const [selected, setSelected] = useState<string>(PREFERRED_DEFAULT_CLUB);
   const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [leagues, allClubs] = await Promise.all([
+      const [leaguesData, clubsData] = await Promise.all([
         fetch('/data/leagues.json').then((r) => r.json() as Promise<RawLeague[]>),
         fetch('/data/clubs.json').then((r) => r.json() as Promise<RawClub[]>),
       ]);
-      const league = leagues.find((l) => l.id === 'ENG1');
-      const clubIds = new Set(league?.clubIds ?? []);
-      const plClubs = allClubs
-        .filter((c) => clubIds.has(c.id))
-        .sort((a, b) => (b.reputation ?? 0) - (a.reputation ?? 0));
-      setClubs(plClubs);
-      if (!plClubs.some((c) => c.id === PREFERRED_DEFAULT_CLUB) && plClubs[0]) {
-        setSelected(plClubs[0].id);
-      }
+      setLeagues(leaguesData.filter((l) => PLAYABLE_LEAGUE_IDS.includes(l.id)));
+      setAllClubs(clubsData);
     })().catch((err: unknown) => console.error('Failed to load clubs for new game', err));
   }, []);
+
+  const clubsInLeague = useMemo(() => {
+    if (!leagues || !allClubs) return [];
+    const league = leagues.find((l) => l.id === leagueId);
+    const clubIds = new Set(league?.clubIds ?? []);
+    return allClubs.filter((c) => clubIds.has(c.id)).sort((a, b) => (b.reputation ?? 0) - (a.reputation ?? 0));
+  }, [leagues, allClubs, leagueId]);
+
+  useEffect(() => {
+    if (clubsInLeague.length === 0) return;
+    if (!clubsInLeague.some((c) => c.id === selected)) {
+      setSelected(clubsInLeague[0]!.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubsInLeague]);
 
   if (phase.kind === 'importing') {
     return (
@@ -41,10 +53,24 @@ export function NewGameScreen() {
   return (
     <div className="new-game">
       <h1 className="new-game-title">New career</h1>
-      <p className="new-game-subtitle">Pick a Premier League club to manage for 2026/27.</p>
+      <p className="new-game-subtitle">Pick a club to manage for 2026/27, in any of the 10 playable leagues.</p>
+
+      <div className="league-tabs">
+        {leagues?.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            className={`league-tab${l.id === leagueId ? ' selected' : ''}`}
+            onClick={() => setLeagueId(l.id)}
+          >
+            {l.name}
+          </button>
+        ))}
+      </div>
+
       <div className="club-grid">
-        {clubs === null && <p className="importing-stage">Loading clubs…</p>}
-        {clubs?.map((club) => (
+        {!leagues && <p className="importing-stage">Loading clubs…</p>}
+        {clubsInLeague.map((club) => (
           <button
             key={club.id}
             type="button"
@@ -59,7 +85,7 @@ export function NewGameScreen() {
       <button
         type="button"
         className="start-button"
-        disabled={!clubs || starting}
+        disabled={!leagues || starting}
         onClick={() => {
           setStarting(true);
           beginCareer(selected).catch((err: unknown) => {

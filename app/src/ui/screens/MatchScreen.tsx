@@ -1,17 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { MatchEvent, MatchResult } from '../../domain/match';
 import { buildCommentaryContext, describeEvent, isKeyMoment } from '../../engine/commentary';
-import {
-  advanceDateToMatchday,
-  currentMatchday,
-  prepareMatch,
-  runMatch,
-  simulateFixture,
-  simulateRestOfMatchday,
-  type MatchPreparation,
-} from '../../state/actions';
+import { prepareMatch, runMatch, simulateFixture, type MatchPreparation } from '../../state/actions';
 import { useReadyGame } from '../../state/GameContext';
 import { useClub } from '../../state/hooks';
+import { advanceWorldTo } from '../../state/world';
 import './MatchScreen.css';
 
 type ViewMode = 'instant' | 'key' | 'full';
@@ -68,7 +61,7 @@ export function MatchScreen({ fixtureId, onDone }: { fixtureId: string; onDone: 
   }, [db, fixtureId]);
 
   const homeClub = useClub(prep?.fixture.homeClubId);
-  const awayClub = useClub(prep?.fixture.awayClubId);
+  const awayClub = useClub(prep?.fixture.awayClubId ?? undefined);
 
   const commentary = useMemo(() => {
     if (!prep || !homeClub || !awayClub) return null;
@@ -98,10 +91,8 @@ export function MatchScreen({ fixtureId, onDone }: { fixtureId: string; onDone: 
   async function finish() {
     if (!prep || finishing) return;
     setFinishing(true);
-    await simulateRestOfMatchday(db, prep.fixture.matchday, save.managerClubId ?? '');
-    const fixtures = await db.fixtures.where('leagueId').equals(prep.fixture.leagueId).toArray();
-    const next = currentMatchday(fixtures);
-    if (next !== null) await advanceDateToMatchday(db, next);
+    await advanceWorldTo(db, prep.fixture.season, prep.fixture.date);
+    await db.saves.update(save.id, { currentDate: prep.fixture.date, updatedAt: new Date().toISOString() });
     await refreshSave();
     onDone();
   }

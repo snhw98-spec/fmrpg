@@ -111,6 +111,9 @@ export interface SimulateMatchOptions {
    * them, despite the engine computing a match in one synchronous pass.
    */
   secondHalfTalk?: { side: 'home' | 'away'; multiplier: number };
+  /** Cup/playoff/knockout fixtures: resolve a drawn scoreline via penalties rather than
+   * leaving it as a draw (Milestone 2 simplifies extra time away — straight to penalties). */
+  decidesKnockout?: boolean;
 }
 
 export function simulateMatch(
@@ -244,14 +247,16 @@ export function simulateMatch(
         }
       }
 
-      events.push({
-        minute,
-        team,
-        type: 'shot',
-        playerId: shooter?.id ?? 0,
-        xg: Number(baseXg.toFixed(3)),
-        outcome,
-      });
+      if (opts.detailed !== false) {
+        events.push({
+          minute,
+          team,
+          type: 'shot',
+          playerId: shooter?.id ?? 0,
+          xg: Number(baseXg.toFixed(3)),
+          outcome,
+        });
+      }
     }
 
     // Fouls: the defending side commits them while trying to stop the attacker. A higher
@@ -268,21 +273,25 @@ export function simulateMatch(
         if (card === 'yellow') defenderStats.yellowCards++;
         else defenderStats.redCards++;
       }
-      events.push({
-        minute,
-        team: defender === home ? 'home' : 'away',
-        type: 'foul',
-        playerId: fouler?.id ?? 0,
-        card,
-      });
+      if (opts.detailed !== false) {
+        events.push({
+          minute,
+          team: defender === home ? 'home' : 'away',
+          type: 'foul',
+          playerId: fouler?.id ?? 0,
+          card,
+        });
+      }
     }
 
-    // Injuries: rare, scaled by the individual's injury proneness.
+    // Injuries: rare, scaled by the individual's injury proneness. Skipped for a side with
+    // no named XI (a background-league club with an unusably thin dataset squad).
     for (const [side, squadTeam] of [['home', home] as const, ['away', away] as const]) {
+      if (squadTeam.xi.length === 0) continue;
       const candidate = rng.pick(squadTeam.xi);
       const player = squadTeam.byId.get(candidate.playerId);
       const proneness = player?.hidden.injuryProneness ?? 10;
-      if (rng.chance(SIM_CONFIG.injuryBaseRate * (proneness / 10))) {
+      if (rng.chance(SIM_CONFIG.injuryBaseRate * (proneness / 10)) && opts.detailed !== false) {
         events.push({ minute, team: side, type: 'injury', playerId: player?.id ?? 0 });
       }
     }
@@ -299,6 +308,11 @@ export function simulateMatch(
   homeStats.xg = Number(homeStats.xg.toFixed(2));
   awayStats.xg = Number(awayStats.xg.toFixed(2));
 
+  let penaltyWinner: 'home' | 'away' | undefined;
+  if (opts.decidesKnockout && homeStats.goals === awayStats.goals) {
+    penaltyWinner = resolveShootout(home, away, rng);
+  }
+
   return {
     homeClubId,
     awayClubId,
@@ -306,5 +320,22 @@ export function simulateMatch(
     away: awayStats,
     scorers,
     events,
+    ...(penaltyWinner ? { penaltyWinner } : {}),
   };
+}
+
+/** Simplified shootout: a weighted coin flip on each side's average composure + goalkeeper
+ * shot-stopping, rather than simulating individual kicks. */
+function resolveShootout(home: InternalTeam, away: InternalTeam, rng: Rng): 'home' | 'away' {
+  const strength = (team: InternalTeam): number => {
+    const outfield = team.xi.filter((s) => s.position !== 'GK');
+    const composure =
+      outfield.reduce((sum, s) => sum + (team.byId.get(s.playerId)?.attributes.mental.composure ?? 10), 0) /
+      Math.max(1, outfield.length);
+    return composure + team.ratings.gk * 0.5;
+  };
+  const homeStrength = strength(home);
+  const awayStrength = strength(away);
+  const pHome = homeStrength / Math.max(1, homeStrength + awayStrength);
+  return rng.chance(pHome) ? 'home' : 'away';
 }

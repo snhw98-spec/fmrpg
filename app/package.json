@@ -9,6 +9,7 @@
     "build": "npm run sync-data && tsc -b && vite build",
     "lint": "oxlint",
     "test": "npm run sync-data && vitest run",
+    "test:world": "npm run sync-data && tsx scripts/run-world-harness.ts",
     "balance": "tsx scripts/run-balance-harness.ts",
     "preview": "vite preview"
   },

@@ -1,6 +1,22 @@
 // Types mirroring fm-dataset's JSON exactly (see fm-dataset/DATA.md). These are the shapes
 // fetched from public/data/*.json on first launch — never hand-edited, only imported.
 
+/** `positions` describes a single-league 4- or 6-club bracket (seeds, best first); `position`
+ * + `opponent` describes a single cross-league tie (e.g. GER1 16th vs GER2 3rd) — the two
+ * leagues' rule objects both point at the same real-world tie. */
+export interface PlayoffRule {
+  positions?: number[];
+  position?: number;
+  opponent?: string;
+  format: string;
+  places?: number;
+}
+
+export interface PlayoutRule {
+  positions: [number, number];
+  format: string;
+}
+
 export interface RawLeague {
   id: string;
   name: string;
@@ -13,13 +29,13 @@ export interface RawLeague {
   promotion: {
     auto?: number;
     to?: string;
-    playoff?: { positions: number[]; format: string; places: number };
+    playoff?: PlayoffRule;
   } | null;
   relegation: {
     auto?: number;
     to?: string;
-    playoff?: unknown;
-    playout?: unknown;
+    playoff?: PlayoffRule;
+    playout?: PlayoutRule;
     note?: string;
   } | null;
   europe: {

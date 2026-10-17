@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Fixture } from '../domain/match';
+import type { Fixture } from '../domain/competition';
 import { computeTable, generateDoubleRoundRobinFixtures } from './season';
 
 describe('generateDoubleRoundRobinFixtures', () => {
   it('gives every club a home and away fixture against every other club', () => {
     const clubIds = ['a', 'b', 'c', 'd', 'e', 'f'];
-    const fixtures = generateDoubleRoundRobinFixtures('TEST', clubIds, new Date('2026-08-01'));
+    const fixtures = generateDoubleRoundRobinFixtures('TEST', '2026-27', clubIds, new Date('2026-08-01'));
 
     expect(fixtures).toHaveLength(clubIds.length * (clubIds.length - 1));
 
@@ -17,10 +17,10 @@ describe('generateDoubleRoundRobinFixtures', () => {
     }
 
     // Every club plays exactly once per matchday.
-    const matchdays = new Set(fixtures.map((f) => f.matchday));
+    const matchdays = new Set(fixtures.map((f) => f.round));
     for (const md of matchdays) {
       const teamsThisMatchday = fixtures
-        .filter((f) => f.matchday === md)
+        .filter((f) => f.round === md)
         .flatMap((f) => [f.homeClubId, f.awayClubId]);
       expect(new Set(teamsThisMatchday).size).toBe(teamsThisMatchday.length);
       expect(teamsThisMatchday).toHaveLength(clubIds.length);
@@ -28,7 +28,7 @@ describe('generateDoubleRoundRobinFixtures', () => {
   });
 
   it('throws on an odd number of clubs', () => {
-    expect(() => generateDoubleRoundRobinFixtures('TEST', ['a', 'b', 'c'], new Date())).toThrow();
+    expect(() => generateDoubleRoundRobinFixtures('TEST', '2026-27', ['a', 'b', 'c'], new Date())).toThrow();
   });
 });
 
@@ -37,11 +37,14 @@ describe('computeTable', () => {
     const fixtures: Fixture[] = [
       {
         id: '1',
-        leagueId: 'TEST',
-        matchday: 1,
+        season: '2026-27',
+        kind: 'league',
+        competitionId: 'TEST',
+        round: 1,
         homeClubId: 'a',
         awayClubId: 'b',
         date: '2026-08-01',
+        played: 1,
         result: {
           homeClubId: 'a',
           awayClubId: 'b',
@@ -53,11 +56,14 @@ describe('computeTable', () => {
       },
       {
         id: '2',
-        leagueId: 'TEST',
-        matchday: 2,
+        season: '2026-27',
+        kind: 'league',
+        competitionId: 'TEST',
+        round: 2,
         homeClubId: 'b',
         awayClubId: 'a',
         date: '2026-08-08',
+        played: 1,
         result: {
           homeClubId: 'b',
           awayClubId: 'a',

@@ -82,17 +82,8 @@ export interface MatchResult {
   away: TeamMatchStats;
   scorers: { minute: number; team: 'home' | 'away'; playerId: number }[];
   events: MatchEvent[];
-}
-
-export interface Fixture {
-  id: string;
-  leagueId: string;
-  matchday: number;
-  homeClubId: string;
-  awayClubId: string;
-  /** ISO date this fixture is scheduled for. */
-  date: string;
-  result: MatchResult | null;
+  /** Set only for knockout fixtures that finished level — who won the shootout. */
+  penaltyWinner?: 'home' | 'away';
 }
 
 export const FORMATIONS: Record<FormationId, Formation> = {

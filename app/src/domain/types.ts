@@ -10,7 +10,11 @@ export interface LeagueRow extends RawLeague {
   economyMultiplier: number;
 }
 
-export type ClubRow = RawClub;
+export interface ClubRow extends RawClub {
+  /** True for clubs generated to fill a gap (DATA.md gaps #2/#3): a relegation-replacement,
+   * a cup filler, or a European stand-in. No real finances/stadium data. */
+  generated?: boolean;
+}
 
 export type PlayerRow = RawPlayer;
 
@@ -38,6 +42,8 @@ export interface SaveSlot {
   createdAt: string;
   updatedAt: string;
   currentDate: string;
+  /** e.g. "2026-27". Fixtures/history are keyed by this so rollover can start a new one. */
+  currentSeason: string;
   rngSeed: string;
   managerClubId: string | null;
 }

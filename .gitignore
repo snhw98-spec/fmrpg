@@ -2,3 +2,6 @@
 **/.DS_Store
 __pycache__/
 *.pyc
+
+# Claude Code session-local runtime state, not project content.
+.claude/*.lock
