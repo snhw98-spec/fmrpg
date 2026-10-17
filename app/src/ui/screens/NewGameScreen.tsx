@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { RawClub, RawLeague } from '../../domain/raw';
+import { dataUrl } from '../../data/paths';
 import { useGameContext } from '../../state/GameContext';
 import './NewGameScreen.css';
 
@@ -18,8 +19,8 @@ export function NewGameScreen() {
   useEffect(() => {
     (async () => {
       const [leaguesData, clubsData] = await Promise.all([
-        fetch('/data/leagues.json').then((r) => r.json() as Promise<RawLeague[]>),
-        fetch('/data/clubs.json').then((r) => r.json() as Promise<RawClub[]>),
+        fetch(dataUrl('leagues.json')).then((r) => r.json() as Promise<RawLeague[]>),
+        fetch(dataUrl('clubs.json')).then((r) => r.json() as Promise<RawClub[]>),
       ]);
       setLeagues(leaguesData.filter((l) => PLAYABLE_LEAGUE_IDS.includes(l.id)));
       setAllClubs(clubsData);

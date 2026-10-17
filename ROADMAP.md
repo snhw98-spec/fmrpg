@@ -54,6 +54,13 @@ Scope: Premier League only (Arsenal as your test club), but the import/editor/en
   - **ESP2's reserve-team promotion rule** (Real Sociedad B / Celta Fortuna can't promote into the same division as their first team) isn't enforced yet — a narrow, two-club exception, flagged rather than silently risking an incorrect promotion.
   - **Contract renewal/retirement at rollover** is a flat age-based probability curve, not a real negotiation (that's Milestone 4) — expiring contracts auto-renew with a small random wage bump unless the player's old enough to retire outright. No youth intake replacing retirees yet (Milestone 6).
 
+## Infrastructure — GitHub Pages hosting
+✅ Done (2026-10-17), pulled forward from Milestone 6
+
+- `.github/workflows/deploy.yml`: every push to `main` builds and deploys automatically to **https://snhw98-spec.github.io/fmrpg/**.
+- App now builds correctly under both root (`/`, local dev/preview) and the `/fmrpg/` subpath Pages serves from (`DEPLOY_TARGET=gh-pages` env var in the workflow controls which) — fixed the PWA manifest, icon links, and the world-data fetch paths, all of which previously assumed root-only.
+- One-time manual step on your end if the link doesn't resolve yet: repo **Settings → Pages → Build and deployment → Source → GitHub Actions** (see [README.md](README.md)).
+
 ## Milestone 3 — Core RPG layer
 ⬜ Status
 
@@ -92,7 +99,7 @@ Scope: Premier League only (Arsenal as your test club), but the import/editor/en
 - Full stats suite (§8): tappable profiles everywhere, sortable/filterable tables with per-90 toggle, season/career/club splits, home-away/competition/month/opponent-tier splits, advanced metrics (xG/xA/PPDA/progressive actions/GK stats), league leaders/records/awards/team histories/head-to-heads, trend charts.
 - Mobile table polish: sticky column, horizontal scroll, compact density pass across the whole app.
 - Performance pass on season rollover and full-world fast-sim given a multi-decade save.
-- Hosting write-up: GitHub Pages deploy steps + home-screen install instructions.
+- ~~Hosting write-up: GitHub Pages deploy steps + home-screen install instructions.~~ **Pulled forward to 2026-10-17** (see below) — you asked for a real link sooner rather than later, and it was a small, self-contained piece of work.
 - **Acceptance**: a multi-season save holds up — history is queryable, stats are deep and fast to browse on your phone, performance is still snappy.
 
 ## Open items to revisit mid-build (not blocking, flagged so they don't get lost)

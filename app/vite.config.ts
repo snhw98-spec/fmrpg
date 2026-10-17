@@ -2,8 +2,14 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vitest/config'
 
+// GitHub Pages serves this repo at /fmrpg/, not /. Local dev/preview (and your own
+// `npm run preview -- --host` phone testing) stay at root — only the CI build that deploys
+// to Pages sets DEPLOY_TARGET=gh-pages (see .github/workflows/deploy.yml).
+const base = process.env.DEPLOY_TARGET === 'gh-pages' ? '/fmrpg/' : '/'
+
 // https://vite.dev/config/
 export default defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -23,11 +29,12 @@ export default defineConfig({
         ],
       },
       manifest: {
-        id: '/',
+        id: base,
         name: 'Football Manager RPG',
         short_name: 'FM RPG',
         description: 'Private football management RPG — 2026/27 world.',
-        start_url: '/',
+        start_url: base,
+        scope: base,
         display: 'standalone',
         background_color: '#0b0f14',
         theme_color: '#0b0f14',

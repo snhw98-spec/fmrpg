@@ -3,6 +3,7 @@ import type { ClubRow, PersonRow, PlayerRow } from '../domain/types';
 import { createRng } from '../engine/rng';
 import type { GameDatabase } from './db';
 import { generatePerson, generateSquad, generateYouthPlayer } from './generate';
+import { dataUrl } from './paths';
 
 async function fetchJson<T>(path: string): Promise<T> {
   const res = await fetch(path);
@@ -34,13 +35,13 @@ export async function importWorldIfNeeded(db: GameDatabase, onProgress?: ImportP
 
   onProgress?.('Fetching world data…');
   const [leagues, clubs, players, playersWorld, cups, namePools, europe] = await Promise.all([
-    fetchJson<RawLeague[]>('/data/leagues.json'),
-    fetchJson<RawClub[]>('/data/clubs.json'),
-    fetchJson<RawPlayer[]>('/data/players.json'),
-    fetchJson<RawPlayer[]>('/data/players_world.json'),
-    fetchJson<RawCup[]>('/data/cups.json'),
-    fetchJson<NamePools>('/data/name_pools.json'),
-    fetchJson<RawEurope>('/data/europe.json'),
+    fetchJson<RawLeague[]>(dataUrl('leagues.json')),
+    fetchJson<RawClub[]>(dataUrl('clubs.json')),
+    fetchJson<RawPlayer[]>(dataUrl('players.json')),
+    fetchJson<RawPlayer[]>(dataUrl('players_world.json')),
+    fetchJson<RawCup[]>(dataUrl('cups.json')),
+    fetchJson<NamePools>(dataUrl('name_pools.json')),
+    fetchJson<RawEurope>(dataUrl('europe.json')),
   ]);
 
   onProgress?.('Writing leagues…');
