@@ -31,6 +31,12 @@ jobs:
         env:
           DEPLOY_TARGET: gh-pages
       - uses: actions/configure-pages@v5
+        with:
+          # Repo has never had Pages enabled, so the action's own default GET-first check
+          # 404s before it gets a chance to create it. enablement: true has it provision the
+          # Pages site (source: GitHub Actions) itself instead of requiring a manual
+          # Settings -> Pages click first.
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: app/dist
